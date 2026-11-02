@@ -196,6 +196,15 @@ nav.tb a{font-size:10px}
 .bk{text-align:center;margin-bottom:8px}.bk small{font:500 11px var(--sans);letter-spacing:.16em;color:var(--o2)}
 .bk h3{margin:8px 0 6px;font:600 26px/1.25 var(--disp)}.bk p{margin:0 0 6px}
 .bk .cta{display:flex;justify-content:center;width:100%}
+
+.cl-h{margin:0 0 14px}.cl-h b{font:600 14px var(--sans)}.cl-bar{height:8px;border-radius:9px;background:#15302026;margin-top:8px;overflow:hidden}.cl-bar i{display:block;height:100%;background:linear-gradient(90deg,var(--o),var(--o2));transition:width .4s}
+.cl{background:#fffdf7;border:1px solid #c9a24a66;border-radius:16px;padding:14px;margin:0 0 12px;scroll-margin-top:16px}.cl.nx{border-color:var(--o);box-shadow:0 0 0 2px #e8892b44}.cl.ok{background:#f2f7ee;border-color:#2e7d4a55}
+.cl-t{display:flex;gap:12px;align-items:flex-start}.cl-t h3{margin:0;font:600 17px/1.25 var(--body)}.cl-t p{margin:3px 0 0;font:400 13px/1.35 var(--sans);color:var(--mut)}
+.cl-n{flex:none;width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--g);color:#f0ebdc;font:600 14px var(--sans)}.cl.ok .cl-n{background:#2e7d4a}
+.cl-b{margin-top:12px;min-height:46px}.cl-i{display:block;width:100%;max-height:300px;object-fit:cover;border-radius:12px;margin:12px 0 6px}.cl-a{text-align:center}.cl-s{font:500 11px var(--sans);color:var(--mut);margin:0;text-align:center}
+.pop{position:fixed;inset:0;z-index:9999;background:#0c1f14d9;display:flex;align-items:center;justify-content:center;padding:20px;animation:popin .25s ease-out}
+.pop-c{width:100%;max-width:380px;background:#f7f2e3;border:3px solid var(--au);border-radius:24px;padding:30px 24px 24px;text-align:center;box-shadow:0 20px 60px #0008}.pop-e{font-size:64px;line-height:1}.pop-c h2{margin:10px 0 8px;font:600 34px/1.1 var(--disp)}.pop-c p{margin:6px 0;font:400 15px/1.45 var(--sans)}.pop-b{font:700 19px/1.35 var(--body)!important;color:var(--o2);margin:14px 0 8px!important}
+@keyframes popin{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:none}}
 </style>
 </head>
 <body>
@@ -284,7 +293,7 @@ function wrap(c,t,x,y,w,lh){let l='';for(const wd of t.split(' ')){const n=l?l+'
 const fontsReady=()=>Promise.all([document.fonts.load('600 60px "Bodoni Moda"'),document.fonts.load('italic 700 40px "Cormorant Garamond"'),document.fonts.load('600 60px "Dancing Script"')]).catch(()=>{});
 const loadImg=u=>new Promise((ok,no)=>{const i=new Image();i.onload=()=>ok(i);i.onerror=no;i.src=u});
 /* ===== Memory book: sessions, photos, live camera, final PDF ===== */
-const PH={},PHERR={},CLOUD={},GEN={busy:0,err:''};
+const PH={},PHERR={},CLOUD={},GEN={busy:0,err:''};let POP=false;
 let PHREADY=false,FRESH=false;
 const CAM={step:'idle',stream:null,facing:'environment',started:0,retake:0,shot:null,shotUrl:''};
 const IDB={db:null,open(){return this.db||(this.db=new Promise((ok,no)=>{try{const r=indexedDB.open('parampara-v1',1);r.onupgradeneeded=()=>r.result.createObjectStore('p');r.onsuccess=()=>ok(r.result);r.onerror=()=>no(r.error)}catch(e){no(e)}}))},
@@ -294,6 +303,11 @@ const keep=()=>{const y=scrollY;render();scrollTo(0,y)};
 const loadX=u=>new Promise((ok,no)=>{const i=new Image();i.crossOrigin='anonymous';i.onload=()=>ok(i);i.onerror=no;i.src=u});
 const first=()=>G?G.child.split(' ')[0]:'';
 const newSid=()=>'s'+Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+function syncStamps(){const have=ACT.every((a,i)=>PH['corner-'+pad(i+1)]),was=allDone();ACT.forEach((a,i)=>{const id='corner-'+pad(i+1);have?done.add(id):done.delete(id)});save();if(have&&!was)POP=true}
+const nextRow=()=>{if(POP||ROUTE!=='activities')return;const nx=ACT.findIndex((a,i)=>!PH['corner-'+pad(i+1)]);const el=nx>=0&&document.getElementById('row-corner-'+pad(nx+1));if(el)el.scrollIntoView({behavior:'smooth',block:'center'})};
+const popHTML=()=>POP&&allDone()?`<div class="pop" role="dialog" aria-modal="true" aria-labelledby="pop-t"><div class="pop-c"><div class="pop-e">🎉</div><h2 id="pop-t">You are done!</h2><p>All ${ACT.length} activities are complete and your postcard is stamped.</p><p class="pop-b">Now click the final smile of your child.</p><a class="cta" data-popx href="#memories" style="width:100%;justify-content:center">Click Final Smile 📸</a><button class="lnk" data-popx type="button" style="display:block;margin:12px auto 0;text-align:center">Not now</button></div></div>`:'';
+const checklist=()=>{const n=ACT.filter((a,i)=>PH['corner-'+pad(i+1)]).length,nx=ACT.findIndex((a,i)=>!PH['corner-'+pad(i+1)]);
+ return `<div class="pg"><div class="cl-h"><b>${n} of ${ACT.length} photos added</b><div class="cl-bar"><i style="width:${n*100/ACT.length}%"></i></div></div>`+ACT.map((a,i)=>{const id='corner-'+pad(i+1),p=PH[id];return `<div class="cl${p?' ok':''}${i===nx?' nx':''}" id="row-${id}"><div class="cl-t"><span class="cl-n">${p?'✓':pad(i+1)}</span><div><h3>${a[0]}</h3><p>${a[1]}</p></div></div>${p?`<img src="${p.url}" class="cl-i" alt="Photo for ${esc(a[0])}"><div class="cl-a"><label class="lnk" for="ph-${id}" style="cursor:pointer">Change photo</label> &nbsp;·&nbsp; <button class="lnk" data-phdel="${id}">Remove</button></div><p class="cl-s">${cloudLabel(id)}</p>`:`<label class="cta cl-b" for="ph-${id}" style="cursor:pointer">＋ Add photo</label><a class="lnk" href="#${id}" style="display:inline-block;margin-left:14px">What to do ›</a>`}<input type="file" accept="image/*" id="ph-${id}" data-ph="${id}" hidden><p class="err2" role="alert">${PHERR[id]||''}</p></div>`}).join('')+`</div>`};
 const allDone=()=>ACT.every((a,i)=>done.has('corner-'+pad(i+1)));
 const nPh=()=>ACT.filter((a,i)=>PH['corner-'+pad(i+1)]).length;
 async function shrink(f,max){const im=await createImageBitmap(f);const r=Math.min(1,max/Math.max(im.width,im.height));const cv=document.createElement('canvas');cv.width=Math.round(im.width*r);cv.height=Math.round(im.height*r);cv.getContext('2d').drawImage(im,0,0,cv.width,cv.height);return new Promise((ok,no)=>cv.toBlob(b=>b?ok(b):no(),'image/jpeg',.88))}
@@ -329,8 +343,8 @@ const cloudLabel=id=>CLOUD[id]==='saved'?'☁ Backed up to event storage':CLOUD[
 const phBlock=id=>{const p=PH[id];return `<h4>Your photo</h4><p style="margin:0 0 12px;color:var(--mut)">Add a photo of what your little one made here. It goes into your Parampara memory book.</p>${p?`<div class="card" style="text-align:center"><img src="${p.url}" alt="Your photo from this corner" class="phi"><p style="font:500 11px var(--sans);margin:6px 0 10px;color:var(--mut)">${cloudLabel(id)}</p><label class="lnk" for="ph-${id}" style="cursor:pointer">Change photo</label> &nbsp;·&nbsp; <button class="lnk" data-phdel="${id}">Remove</button></div>`:`<label class="drop" for="ph-${id}" style="margin:0">Tap to add a photo<br><small style="opacity:.7">Saved on this phone and backed up to private event storage</small></label>`}<input type="file" accept="image/*" id="ph-${id}" data-ph="${id}" hidden><p class="err2" role="alert">${PHERR[id]||''}</p>`};
 
 /* ---- final photo button on the postcard page ---- */
-function finalCard(){const n=ACT.filter((a,i)=>done.has('corner-'+pad(i+1))).length,ok=n===ACT.length;
- return `<div class="pg" style="margin-top:22px"><div class="card bk"><small>${n} OF ${ACT.length} STAMPS</small><h3>One Last Memory</h3><p>${ok?'All stamps collected! Your final photo is unlocked.':'Collect all '+ACT.length+' stamps to unlock your final photo.'}</p>${ok?'<a class="cta" href="#memories">Click Your Final Photo</a>':`<button class="cta" type="button" disabled aria-disabled="true">Click Your Final Photo</button><p style="color:var(--mut);font-size:17px;margin:10px 0 0">${ACT.length-n} more to go</p>`}</div></div>`}
+function finalCard(){const ok=allDone(),n=ok?ACT.length:ACT.filter((a,i)=>PH['corner-'+pad(i+1)]).length;
+ return `<div class="pg" style="margin-top:22px"><div class="card bk"><small>${n} OF ${ACT.length} PHOTOS</small><h3>One Last Memory</h3><p>${ok?'All photos added and stamps collected! Your final photo is unlocked.':'Add all '+ACT.length+' photos to unlock your final photo.'}</p>${ok?'<a class="cta" href="#memories">Click Your Final Photo</a>':`<button class="cta" type="button" disabled aria-disabled="true">Click Your Final Photo</button><p style="color:var(--mut);font-size:17px;margin:10px 0 0">${ACT.length-n} more to go</p>`}</div></div>`}
 
 /* ---- live camera ---- */
 function stopCam(){if(CAM.stream){CAM.stream.getTracks().forEach(t=>t.stop());CAM.stream=null}}
@@ -356,7 +370,7 @@ function memView(){
  const head=(t,p,s)=>`<div class="mmh"><small>${s||'MEMORIES MENU'}</small><h1>${t}</h1><p>${p}</p></div>`;
  const pol=(inner,cap)=>`<div class="scrap"><div class="pol"><i class="tp"></i>${inner}<div class="cap">${cap||''}</div></div></div>`;
  const fb='<label class="drop" for="finalfile" style="margin:16px 20px 0">Use your phone’s camera app instead<br><small style="opacity:.7">Take a fresh photo and it will appear here</small></label><input type="file" accept="image/*" capture="environment" id="finalfile" hidden>';
- if(!allDone())return top+head('Almost there','Collect all '+ACT.length+' stamps to unlock your final photo.','LOCKED')+'<div class="pg"><a class="cta" href="#activities" style="width:100%;justify-content:center">Back to my postcard</a></div>';
+ if(!allDone())return top+head('Almost there','Add all '+ACT.length+' activity photos to unlock your final photo.','LOCKED')+'<div class="pg"><a class="cta" href="#activities" style="width:100%;justify-content:center">Back to my checklist</a></div>';
  if(!PHREADY)return top+head('One Last Memory ❤️','Getting things ready…')+'<div class="pg" style="text-align:center"><svg class="spin" viewBox="0 0 40 40" aria-hidden="true"><use href="#mg"/></svg></div>';
  const n=esc(first()),confirmed=!!(PH.final&&G.final&&!CAM.retake);
  if(GEN.busy)return top+head('Making your Memory Book','Please keep this page open for a moment.','ALMOST DONE')+`<div class="pg" style="text-align:center"><svg class="spin" viewBox="0 0 40 40" aria-hidden="true"><use href="#mg"/></svg><p id="genm" role="status" style="margin-top:14px">Preparing your pages…</p></div>`;
@@ -456,10 +470,10 @@ document.addEventListener('change',async e=>{const t=e.target;
  if(t.id==='finalfile'){const f=t.files[0];if(!f)return;try{const b=await shrink(f,1600);dropShot();CAM.shot=b;CAM.shotUrl=URL.createObjectURL(b);stopCam();CAM.step='preview'}catch(x){CAM.step='error'}keep();return}
  const k=t.dataset&&t.dataset.ph;if(!k)return;const f=t.files[0];if(!f)return;
  if(!/^image\//.test(f.type)){PHERR[k]='Please choose a photo.';keep();return}
- try{PHERR[k]='';await setPH(k,await shrink(f,1600));await delPH('pdf')}catch(x){PHERR[k]='We could not read that photo. Please try another one.'}
- keep()});
+ try{PHERR[k]='';await setPH(k,await shrink(f,1600));await delPH('pdf');syncStamps()}catch(x){PHERR[k]='We could not read that photo. Please try another one.'}
+ keep();nextRow()});
 document.addEventListener('click',async e=>{
- const d=e.target.closest('[data-phdel]');if(d){await delPH(d.dataset.phdel);await delPH('pdf');keep();return}
+ const d=e.target.closest('[data-phdel]');if(d){await delPH(d.dataset.phdel);await delPH('pdf');syncStamps();keep();return}
  const c=e.target.closest('[data-cam]');if(c){const a=c.dataset.cam;
   if(a==='open'){CAM.started=1;startCam()}
   else if(a==='flip'){CAM.facing=CAM.facing==='user'?'environment':'user';startCam()}
@@ -482,17 +496,17 @@ const tabs=[['home','⌂','Home'],['activities','✦','Activities'],['map','◎'
 const V={
 home(){return `<div class="hero"><div class="top"><span class="lg">The Littles<small>PRESCHOOL</small></span><a class="bell" href="#updates" aria-label="Event updates" style="display:grid;place-items:center;text-decoration:none">🔔${upd.some(u=>u.important)?'<i></i>':''}</a></div>
  <img class="gl" src="${IMG.garland}" alt=""><img class="dy" src="${IMG.diya}" alt=""><img class="sc" src="${IMG.school}" alt="The Littles Pre School"><h1 class="ttl"><img src="${IMG.title}" alt="Parampara – दिवाली सेलिब्रेशन"></h1>${G?`<div class="gr">Welcome, ${greet()}<button class="ed2" id="ed" aria-label="Edit welcome name" title="Edit name">✎</button></div>`:`<div class="k">• Welcome, Parents! •<button class="ed2" id="ed" aria-label="Edit welcome name" title="Edit name">✎</button></div>`}<p class="s">Your little digital companion for today’s celebration.</p><div class="tm" id="tm"></div></div>
- <div class="pg"><a class="card pc" href="#activities"><div><h3>Activity Postcard</h3><p>Your stamps collect here as you visit each corner</p></div></a>
+ <div class="pg"><a class="card pc" href="#activities"><div><h3>Activity Postcard</h3><p>Add a photo for each of the 10 activities, one by one</p></div></a>
  ${upd[0]?`<a class="card up ${upd[0].important?'imp':''}" href="#updates" style="display:block;text-decoration:none"><small>LATEST UPDATE · ${upd[0].t}</small><h3>${upd[0].title}</h3><p>${upd[0].body}</p></a>`:''}
  <div class="grid5"><a class="nt" href="#activities"><b>Activities</b><span>10 corners to explore</span></a><a class="nt" href="#map"><b>Venue Map</b><span>Find your way around</span></a><a class="nt" href="#bazaar"><b>Bazaar</b><span>5 festive stalls</span></a><a class="nt" href="#food"><b>Food & Refreshments</b><span>Free and chargeable</span></a>${driveBtn()}<a class="nt w" href="#memories"><b>My Memory Book</b><span>One last photo &amp; your PDF</span></a><a class="nt w" href="#updates"><b>Event Updates</b><span>What is happening right now</span></a></div></div>`},
 activities(){const rot=['-3deg','2deg','-1.5deg','3deg','-2.5deg','1.5deg','-3.5deg','2.5deg','-1deg','3deg'],sz=['lg','','sm','','lg','sm','','lg','','sm'];
- return bar('Activity Postcard')+`<p class="lead">Visit a corner, add a photo, tap Done, and its stamp lands on your postcard. Collect all 10 stamps to unlock your final photo.</p><div class="pcd"><div class="pch"><div><h2>PARAMPARA</h2>${G?`<div class="cn">${esc(G.child)}’s Postcard</div>`:''}<p>THE LITTLES PRESCHOOL · ${evDate()}</p></div><svg class="pm" viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="44" fill="none" stroke="currentColor" stroke-width="3"/><circle cx="50" cy="50" r="36" fill="none" stroke="currentColor" stroke-width="1.5"/><text x="50" y="46" text-anchor="middle" font-size="11" font-family="Poppins,sans-serif" fill="currentColor" letter-spacing="1.5">PARAMPARA</text><text x="50" y="62" text-anchor="middle" font-size="10" font-family="Poppins,sans-serif" fill="currentColor">2 NOV 2026</text></svg></div>
- <div class="mhs">${ACT.map((a,i)=>done.has('corner-'+pad(i+1))?`<a class="mh ${sz[i]}" style="--r:${rot[i]}" href="#corner-${pad(i+1)}"><b>${pad(i+1)}</b><span>${a[0]}</span></a>`:'').join('')}</div>${done.size?'':'<p class="fine" style="margin:30px 0 40px">Your stamps will appear here as you visit each corner.</p>'}
- <svg class="cancel" viewBox="0 0 300 30" preserveAspectRatio="none" aria-hidden="true"><path d="M0 8q18-10 37 0t37 0 37 0 37 0 37 0 37 0 37 0 37 0M0 22q18-10 37 0t37 0 37 0 37 0 37 0 37 0 37 0 37 0" fill="none" stroke="currentColor" stroke-width="2"/></svg><p class="fine">PARAMPARA · DIWALI CELEBRATION</p></div>${finalCard()}<div class="sec">Activity corners</div><div class="pg"><div class="card" style="padding:6px 20px">${ACT.map((a,i)=>`<a class="fr" href="#corner-${pad(i+1)}" style="text-decoration:none"><span>${pad(i+1)} · ${a[0]}</span><span>›</span></a>`).join('')}</div></div>`},
+ return bar('Activity Postcard')+`<p class="lead">Add a photo for each activity, one below the other. When all 10 are added, your postcard gets stamped and your final photo unlocks.</p>${checklist()}<div class="pcd"><div class="pch"><div><h2>PARAMPARA</h2>${G?`<div class="cn">${esc(G.child)}’s Postcard</div>`:''}<p>THE LITTLES PRESCHOOL · ${evDate()}</p></div><svg class="pm" viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="44" fill="none" stroke="currentColor" stroke-width="3"/><circle cx="50" cy="50" r="36" fill="none" stroke="currentColor" stroke-width="1.5"/><text x="50" y="46" text-anchor="middle" font-size="11" font-family="Poppins,sans-serif" fill="currentColor" letter-spacing="1.5">PARAMPARA</text><text x="50" y="62" text-anchor="middle" font-size="10" font-family="Poppins,sans-serif" fill="currentColor">2 NOV 2026</text></svg></div>
+ <div class="mhs">${ACT.map((a,i)=>done.has('corner-'+pad(i+1))?`<a class="mh ${sz[i]}" style="--r:${rot[i]}" href="#corner-${pad(i+1)}"><b>${pad(i+1)}</b><span>${a[0]}</span></a>`:'').join('')}</div>${done.size?'':'<p class="fine" style="margin:30px 0 40px">Your stamps will land here once all 10 photos are added.</p>'}
+ <svg class="cancel" viewBox="0 0 300 30" preserveAspectRatio="none" aria-hidden="true"><path d="M0 8q18-10 37 0t37 0 37 0 37 0 37 0 37 0 37 0 37 0M0 22q18-10 37 0t37 0 37 0 37 0 37 0 37 0 37 0 37 0" fill="none" stroke="currentColor" stroke-width="2"/></svg><p class="fine">PARAMPARA · DIWALI CELEBRATION</p></div>${finalCard()}`},
 corner(i){const a=ACT[i],id='corner-'+pad(i+1),d=done.has(id),pv=(i+9)%10,nx=(i+1)%10;
  return bar('Corner '+pad(i+1),'activities').replace(/<h2.*<\/h2>/,'')+`<div class="tile">${mg}<small>CORNER</small><b>${pad(i+1)}</b></div><div class="db"><h1>${a[0]}</h1><p style="color:var(--mut)">${a[1]}</p><p>${a[2]}</p>
  <h4>What to do</h4><ol class="st">${a[3].map(s=>`<li><span>${s}</span></li>`).join('')}</ol>${phBlock(id)}
- <button class="cta ${d?'done':''}" data-done="${id}" style="width:100%;justify-content:center;margin-top:30px">${d?'✓ Stamped on your postcard · tap to undo':'Done · Stamp my postcard'}</button><a class="cta ghost" href="#activities" style="width:100%;justify-content:center;margin-top:12px">Back to postcard</a>
+ <a class="cta ghost" href="#activities" style="width:100%;justify-content:center;margin-top:12px">Back to checklist</a>
  <div class="pf"><a class="lnk" href="#corner-${pad(pv+1)}">‹ ${ACT[pv][0]}</a><a class="lnk" href="#corner-${pad(nx+1)}" style="text-align:right">${ACT[nx][0]} ›</a></div><p><a class="lnk" href="#home">⌂ Back to event homepage</a></p></div>`},
 map(){return bar('Venue Map')+`<p class="lead">Tap any place to see what it is.</p><div class="sec" style="margin-top:0">Activity corners</div><div class="mp">${ACT.map((a,i)=>`<button data-m="c${i}">${pad(i+1)}</button>`).join('')}</div>
  <div class="sec">Bazaar stalls</div><div class="mp">${STALLS.map((s,i)=>`<button data-m="s${i}">Stall ${pad(i+1)}</button>`).join('')}</div>
@@ -509,7 +523,7 @@ let ROUTE=location.hash.slice(1)||'home';
 function render(){const h=ROUTE;let k=h,v;
  const m=/^(?:corner|activity)-(\d\d)$/.exec(h),sm=/^stall-(\d\d)$/.exec(h);
  if(m&&ACT[+m[1]-1]){v=V.corner(+m[1]-1);k='activities'}else if(sm&&STALLS[+sm[1]-1]){v=V.stall(+sm[1]-1);k='bazaar'}else if(V[h]&&h!=='corner'&&h!=='stall'){v=V[h]()}else{v=V.home();k='home'}
- if(k!=='memories')camLeave();$('#app').innerHTML=v;$('#tb').innerHTML=tabs.map(t=>`<a href="#${t[0]}" class="${t[0]===k?'on':''}"><b>${t[1]}</b>${t[2]}</a>`).join('');scrollTo(0,0);tick();camAfter();}
+ if(k!=='memories')camLeave();$('#app').innerHTML=v+popHTML();$('#tb').innerHTML=tabs.map(t=>`<a href="#${t[0]}" class="${t[0]===k?'on':''}"><b>${t[1]}</b>${t[2]}</a>`).join('');scrollTo(0,0);tick();camAfter();}
 function tick(){const el=document.getElementById('tm');if(!el)return;const now=Date.now(),s=+new Date(START),e=+new Date(END);let lab,t,live=false;
  if(now<s){lab='It will start in';t=s-now}else if(now<e){lab='It will end in';t=e-now;live=true}
  else{el.className='tm out';el.innerHTML='<div class="lb">Time out</div><div class="msg">The celebration has ended. Thank you for celebrating Parampara with us!</div>';return}
@@ -519,6 +533,7 @@ addEventListener('hashchange',()=>{const h=location.hash.slice(1)||'home';if(h!=
 ['#gpar','#gchi'].forEach(q=>$(q).addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();submitGate()}}));
 
 document.addEventListener('click',e=>{
+ if(e.target.closest('[data-popx]')){POP=false;if(!e.target.closest('a[href^="#"]')){keep();return}}
  const lk=e.target.closest('a[href^="#"]');if(lk){e.preventDefault();const h=lk.getAttribute('href').slice(1)||'home';try{if(location.hash.slice(1)!==h)location.hash=h}catch(x){}if(h!==ROUTE){ROUTE=h;render()}}
  const w=e.target.closest('[data-w]');if(w){const v=w.dataset.w;if(v==='All'){sel=sel.size===WHO.length?new Set():new Set(WHO)}else{sel.has(v)?sel.delete(v):sel.add(v)}$('#gerr').textContent='';drawWho();return}
  if(e.target.id==='gok'){submitGate();return}
