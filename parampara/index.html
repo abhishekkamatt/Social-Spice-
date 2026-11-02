@@ -189,8 +189,6 @@ nav.tb a{font-size:10px}
 .shut{width:78px;height:78px;border-radius:50%;border:4px solid var(--g);background:radial-gradient(circle,var(--o) 0 62%,var(--c) 64%)}
 .flip{width:52px;height:52px;border-radius:50%;border:1px solid var(--g);background:none;font-size:24px;line-height:1}.sp2{width:52px}
 .rowb{display:flex;gap:12px}.rowb .cta{flex:1;justify-content:center;margin-top:0}
-.fine2{margin:12px 0 0;text-align:center;font:400 12px var(--sans);color:var(--mut)}
-.cbox{margin:0 0 16px;font-size:17px;line-height:1.45;text-align:left}.cbox p{margin:8px 0 0}.cbox .cons{align-items:flex-start;margin-top:14px}.cbox .cons input{width:26px;height:26px;min-width:26px}
 .pg .cta[data-gen]{width:100%;margin-top:12px;text-align:center}
 /* ===== Memory book ===== */
 .drv{display:flex;flex-direction:column;align-items:center;text-align:center;margin:10px 0}.drv .cta{justify-content:center;margin-top:0}.drv .cta.off{opacity:.55;cursor:default}.drv p{margin:10px 0 0;max-width:30ch;color:var(--mut);font-size:18px;line-height:1.4}.grid5 .drv{grid-column:1/-1;margin:14px 0 6px}
@@ -220,10 +218,13 @@ const IMG={title:"data:image/webp;base64,UklGRryvAABXRUJQVlA4WAoAAAAQAAAAKQMAJgE
 /* ===== EDIT HERE: all event content. Replace with Supabase later (see CFG). ===== */
 const STUDIO={
   frameUrl:'',
-  aiEndpoint:'https://hghcdxzqopwqlawzwerx.supabase.co/functions/v1/generate-parampara-cartoon',
   maxMB:10
-}; // frameUrl: official transparent frame PNG (data URL or same-site path). aiEndpoint: your server/Supabase Edge Function that returns the cartoon image. Never put API keys here.
-const CFG={supabaseUrl:'',anonKey:''}; // when set on your own domain, announcements load live from Supabase
+}; // frameUrl: official transparent frame PNG (data URL or same-site path). Never put API keys here.
+const CFG={
+ supabaseUrl:'https://hghcdxzqopwqlawzwerx.supabase.co',
+ anonKey:'sb_publishable_rGylH93Z401d684e9WWdlg_Hu69xNNz',
+ bucket:'parampara-uploads'
+}; // Publishable key only. Never place a secret/service_role key in browser code.
 const START='2026-11-02T11:00:00+05:30',END='2026-11-02T15:00:00+05:30';
 const EVENT_DRIVE=''; // paste the Google Drive link of the event photos here (e.g. 'https://drive.google.com/...'). Button appears automatically once filled.
 const GALLERY=[]; // add organiser-approved photo URLs here; gallery stays hidden while empty
@@ -282,9 +283,8 @@ function diyaDraw(c,x,y,s){c.fillStyle='#c9a24a';c.beginPath();c.moveTo(x-s,y);c
 function wrap(c,t,x,y,w,lh){let l='';for(const wd of t.split(' ')){const n=l?l+' '+wd:wd;if(c.measureText(n).width>w&&l){c.fillText(l,x,y);y+=lh;l=wd}else l=n}c.fillText(l,x,y)}
 const fontsReady=()=>Promise.all([document.fonts.load('600 60px "Bodoni Moda"'),document.fonts.load('italic 700 40px "Cormorant Garamond"'),document.fonts.load('600 60px "Dancing Script"')]).catch(()=>{});
 const loadImg=u=>new Promise((ok,no)=>{const i=new Image();i.onload=()=>ok(i);i.onerror=no;i.src=u});
-async function makeToon(f){if(!G||!G.aiConsent)throw new Error('consent');const ac=new AbortController(),t=setTimeout(()=>ac.abort(),90000);try{const fd=new FormData();fd.append('photo',f);const r=await fetch(STUDIO.aiEndpoint,{method:'POST',body:fd,signal:ac.signal});if(!r.ok)throw 0;const ct=r.headers.get('content-type')||'';if(ct.startsWith('image/'))return URL.createObjectURL(await r.blob());const j=await r.json();if(j.image)return j.image;if(j.b64)return 'data:image/png;base64,'+j.b64;throw 0}finally{clearTimeout(t)}}
 /* ===== Memory book: sessions, photos, live camera, final PDF ===== */
-const PH={},PHERR={},GEN={busy:0,err:''};
+const PH={},PHERR={},CLOUD={},GEN={busy:0,err:''};
 let PHREADY=false,FRESH=false;
 const CAM={step:'idle',stream:null,facing:'environment',started:0,retake:0,shot:null,shotUrl:''};
 const IDB={db:null,open(){return this.db||(this.db=new Promise((ok,no)=>{try{const r=indexedDB.open('parampara-v1',1);r.onupgradeneeded=()=>r.result.createObjectStore('p');r.onsuccess=()=>ok(r.result);r.onerror=()=>no(r.error)}catch(e){no(e)}}))},
@@ -298,15 +298,35 @@ const allDone=()=>ACT.every((a,i)=>done.has('corner-'+pad(i+1)));
 const nPh=()=>ACT.filter((a,i)=>PH['corner-'+pad(i+1)]).length;
 async function shrink(f,max){const im=await createImageBitmap(f);const r=Math.min(1,max/Math.max(im.width,im.height));const cv=document.createElement('canvas');cv.width=Math.round(im.width*r);cv.height=Math.round(im.height*r);cv.getContext('2d').drawImage(im,0,0,cv.width,cv.height);return new Promise((ok,no)=>cv.toBlob(b=>b?ok(b):no(),'image/jpeg',.88))}
 function revokeAll(){Object.keys(PH).forEach(k=>{try{URL.revokeObjectURL(PH[k].url)}catch(e){}delete PH[k]})}
-async function setPH(k,b){if(!G)return;if(PH[k])URL.revokeObjectURL(PH[k].url);PH[k]={blob:b,url:URL.createObjectURL(b)};try{await IDB.set(G.sid+':'+k,b)}catch(e){}}
-async function delPH(k){if(PH[k]){URL.revokeObjectURL(PH[k].url);delete PH[k]}try{if(G)await IDB.del(G.sid+':'+k)}catch(e){}}
-async function loadPhotos(){PHREADY=false;if(!G)return;const sid=G.sid,ks=['final','cartoon','pdf',...ACT.map((a,i)=>'corner-'+pad(i+1))];
+async function cloudBackup(k,b,sid){
+ if(!CFG.supabaseUrl||!CFG.anonKey||!CFG.bucket)return;
+ CLOUD[k]='uploading';
+ try{
+  const ext=b.type==='application/pdf'?'pdf':'jpg';
+  const path=sid+'/'+k+'-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,8)+'.'+ext;
+  const url=CFG.supabaseUrl+'/storage/v1/object/'+encodeURIComponent(CFG.bucket)+'/'+path.split('/').map(encodeURIComponent).join('/');
+  const r=await fetch(url,{method:'POST',headers:{apikey:CFG.anonKey,Authorization:'Bearer '+CFG.anonKey,'Content-Type':b.type||'image/jpeg','x-upsert':'false'},body:b});
+  if(!r.ok)throw new Error('Storage upload failed ('+r.status+')');
+  CLOUD[k]='saved';
+ }catch(e){CLOUD[k]='local';console.warn('Parampara cloud backup failed:',e)}
+}
+async function setPH(k,b){
+ if(!G)return;
+ const sid=G.sid;
+ if(PH[k])URL.revokeObjectURL(PH[k].url);
+ PH[k]={blob:b,url:URL.createObjectURL(b)};
+ try{await IDB.set(sid+':'+k,b)}catch(e){}
+ await cloudBackup(k,b,sid);
+}
+async function delPH(k){if(PH[k]){URL.revokeObjectURL(PH[k].url);delete PH[k]}delete CLOUD[k];try{if(G)await IDB.del(G.sid+':'+k)}catch(e){}}
+async function loadPhotos(){PHREADY=false;if(!G)return;const sid=G.sid,ks=['final','pdf',...ACT.map((a,i)=>'corner-'+pad(i+1))];
  for(const k of ks){if(PH[k])continue;const b=await IDB.get(sid+':'+k);if(!G||G.sid!==sid)return;if(b&&b.size&&!PH[k])PH[k]={blob:b,url:URL.createObjectURL(b)}}
  PHREADY=true;if(ROUTE==='activities'||ROUTE==='memories'||/^corner-/.test(ROUTE))keep()}
 function resetSession(){revokeAll();PHREADY=false;GEN.busy=0;GEN.err='';camLeave();loadDone();loadPhotos()}
 
 /* ---- per-corner photo upload ---- */
-const phBlock=id=>{const p=PH[id];return `<h4>Your photo</h4><p style="margin:0 0 12px;color:var(--mut)">Add a photo of what your little one made here. It goes into your Parampara memory book.</p>${p?`<div class="card" style="text-align:center"><img src="${p.url}" alt="Your photo from this corner" class="phi"><label class="lnk" for="ph-${id}" style="cursor:pointer">Change photo</label> &nbsp;·&nbsp; <button class="lnk" data-phdel="${id}">Remove</button></div>`:`<label class="drop" for="ph-${id}" style="margin:0">Tap to add a photo<br><small style="opacity:.7">Stays on this phone</small></label>`}<input type="file" accept="image/*" id="ph-${id}" data-ph="${id}" hidden><p class="err2" role="alert">${PHERR[id]||''}</p>`};
+const cloudLabel=id=>CLOUD[id]==='saved'?'☁ Backed up to event storage':CLOUD[id]==='uploading'?'☁ Backing up…':CLOUD[id]==='local'?'Saved on this phone · cloud backup failed':'Saved on this phone';
+const phBlock=id=>{const p=PH[id];return `<h4>Your photo</h4><p style="margin:0 0 12px;color:var(--mut)">Add a photo of what your little one made here. It goes into your Parampara memory book.</p>${p?`<div class="card" style="text-align:center"><img src="${p.url}" alt="Your photo from this corner" class="phi"><p style="font:500 11px var(--sans);margin:6px 0 10px;color:var(--mut)">${cloudLabel(id)}</p><label class="lnk" for="ph-${id}" style="cursor:pointer">Change photo</label> &nbsp;·&nbsp; <button class="lnk" data-phdel="${id}">Remove</button></div>`:`<label class="drop" for="ph-${id}" style="margin:0">Tap to add a photo<br><small style="opacity:.7">Saved on this phone and backed up to private event storage</small></label>`}<input type="file" accept="image/*" id="ph-${id}" data-ph="${id}" hidden><p class="err2" role="alert">${PHERR[id]||''}</p>`};
 
 /* ---- final photo button on the postcard page ---- */
 function finalCard(){const n=ACT.filter((a,i)=>done.has('corner-'+pad(i+1))).length,ok=n===ACT.length;
@@ -340,11 +360,9 @@ function memView(){
  if(!PHREADY)return top+head('One Last Memory ❤️','Getting things ready…')+'<div class="pg" style="text-align:center"><svg class="spin" viewBox="0 0 40 40" aria-hidden="true"><use href="#mg"/></svg></div>';
  const n=esc(first()),confirmed=!!(PH.final&&G.final&&!CAM.retake);
  if(GEN.busy)return top+head('Making your Memory Book','Please keep this page open for a moment.','ALMOST DONE')+`<div class="pg" style="text-align:center"><svg class="spin" viewBox="0 0 40 40" aria-hidden="true"><use href="#mg"/></svg><p id="genm" role="status" style="margin-top:14px">Preparing your pages…</p></div>`;
- if(confirmed&&PH.pdf)return top+head('Your Memory Book is Ready ✨',n+'’s Parampara memories are now in one beautiful PDF.','ALL DONE')+pol(`<img class="ph" src="${PH.final.url}" alt="${n}’s final photo">`,n+'’s Parampara')+`<div class="pg"><a class="cta" href="${PH.pdf.url}" download="${pdfName()}" style="width:100%;justify-content:center">Download My Memory Book</a><p class="fine2">If the PDF opens in a new tab, use Share or the download icon to save it.</p></div>`;
+ if(confirmed&&PH.pdf)return top+head('Your Memory Book is Ready ✨',n+'’s Parampara memories are now in one beautiful PDF.','ALL DONE')+pol(`<img class="ph" src="${PH.final.url}" alt="${n}’s final photo">`,n+'’s Parampara')+`<div class="pg"><a class="cta" href="${PH.pdf.url}" download="${pdfName()}" style="width:100%;justify-content:center">Download My Memory Book</a><p class="fine2">If the PDF opens in a new tab, use Share or the download icon to save it. Keep this page open until the cloud backup finishes.</p><p style="font:500 11px var(--sans);text-align:center;color:var(--mut)">${cloudLabel('pdf')}</p></div>`;
  if(confirmed){let act;
-  const ok=!!G.aiConsent,dis=ok?'':' disabled aria-disabled="true"';
-  if(GEN.err==='cartoon')act=`<div class="note" style="margin:0 0 14px">The cartoon could not be created right now. Your original photo and memory book are safe. Please try again, or continue without the cartoon.</div>${consentBlock()}<button class="cta" data-gen="go"${dis} style="width:100%;justify-content:center">Try the cartoon again</button><button class="cta ghost" data-gen="skip" style="width:100%;justify-content:center">Continue without cartoon</button>`;
-  else act=`${GEN.err?'<p class="err2" role="alert">We could not create the PDF. Please try again.</p>':''}${consentBlock()}<button class="cta" data-gen="go"${dis} style="width:100%;justify-content:center">Generate My Memory Book with Cartoon</button><button class="cta ghost" data-gen="skip" style="width:100%;justify-content:center">Generate Memory Book without Cartoon</button><p class="fine2">The “without cartoon” option never sends your photo anywhere.</p>`;
+  act=`${GEN.err?'<p class="err2" role="alert">We could not create the PDF. Please try again.</p>':''}<button class="cta" data-gen="go" style="width:100%;justify-content:center">Generate My Memory Book</button>`;
   return top+head('Lovely photo! ❤️','Your final smile is saved. Now let’s put all your Parampara memories together.','ONE LAST STEP')+pol(`<img class="ph" src="${PH.final.url}" alt="${n}’s final photo">`,n+'’s last smile')+`<div class="pg">${act}<button class="lnk" data-cam="retake" style="display:block;margin:12px auto 0">Retake photo</button></div>`}
  const h=head('One Last Memory ❤️','Let’s capture one last smile to complete your Parampara memories.'),cs=CAM.step,keepOld=(PH.final&&G.final)?'<button class="lnk" data-cam="cancel" style="display:block;margin:12px auto 0">Keep my previous photo</button>':'';
  if(cs==='live')return top+h+`<div class="scrap"><div class="pol"><i class="tp"></i><video id="cam" class="ph${CAM.facing==='user'?' mir':''}" autoplay playsinline muted></video></div><div class="camb"><button class="flip" data-cam="flip" aria-label="Switch camera">⟲</button><button class="shut" data-cam="snap" aria-label="Take photo"></button><span class="sp2"></span></div></div>${keepOld}`;
@@ -352,7 +370,6 @@ function memView(){
  if(cs==='denied')return top+h+`<div class="pg"><div class="card bk"><small>CAMERA BLOCKED</small><h3>We need your camera</h3><p>Camera access was not allowed. Please allow camera for this page in your browser settings, then tap Try again.</p><button class="cta" data-cam="open">Try again</button></div></div>${fb}${keepOld}`;
  if(cs==='unsupported'||cs==='error')return top+h+`<div class="pg"><div class="card bk"><small>CAMERA</small><h3>Camera not available</h3><p>${cs==='error'?'Something went wrong while opening the camera.':'This device or browser cannot open the live camera here.'} You can use your phone’s camera app instead.</p><button class="cta" data-cam="open">Try again</button></div></div>${fb}${keepOld}`;
  return top+h+`<div class="scrap"><div class="pol"><i class="tp"></i><div class="ph wait"><p>${cs==='asking'?'Opening your camera…<br><small>Please tap Allow when your phone asks.</small>':'Your camera will open here.'}</p></div></div></div><div class="pg"><button class="cta" data-cam="open" style="width:100%;justify-content:center">Open camera</button></div>${keepOld}`}
-const consentBlock=()=>{const n=esc(first());return `<div class="card cbox"><strong>Optional: AI cartoon of ${n}</strong><p>If you choose the cartoon, ${n}’s final photo is sent over a secure (HTTPS) connection to our AI backend, only to generate the cartoon. It is not intended for public display or a public gallery. Your corner photos are never sent. The original framed photo and the cartoon stay as two separate pages in the memory book.</p><label class="cons"><input type="checkbox" data-consent ${G.aiConsent?'checked':''}><span>I am the parent or guardian of ${n} and I agree to send this photo to the AI backend to create a cartoon.</span></label></div>`};
 const pdfName=()=>{const s=(G?G.child:'').replace(/[^A-Za-z0-9]+/g,'-').replace(/^-|-$/g,'');return 'Parampara-Memory-Book'+(s?'-'+s:'')+'.pdf'};
 
 /* ---- PDF ---- */
@@ -366,15 +383,10 @@ function pdfBlob(pgs,W,H){const enc=new TextEncoder(),parts=[],offs=[];let len=0
  const total=3+n*3,x=len;put('xref\n0 '+total+'\n0000000000 65535 f \n');for(let i=1;i<total;i++)put(String(offs[i]).padStart(10,'0')+' 00000 n \n');
  put('trailer\n<< /Size '+total+' /Root 1 0 R >>\nstartxref\n'+x+'\n%%EOF');return new Blob(parts,{type:'application/pdf'})}
 const CAP=[n=>`${n} made yummy mithai at Dadi Nani ki Dukaan!`,n=>`${n} strung a pretty toran of fresh flowers!`,n=>`${n} created this beautiful Rangoli!`,n=>`${n} decorated a colourful table mat!`,n=>`${n} drew lovely mehendi doodles!`,n=>`${n} arranged a Diwali puja thali!`,n=>`${n} shaped a clay diya with little hands!`,n=>`${n} painted a bright festive tealight!`,n=>`${n} decorated a little Diwali home!`,n=>`${n} wore festive twinning face art!`];
-async function ensureCartoon(){if(PH.cartoon)return true;if(!STUDIO.aiEndpoint||!PH.final||!G||!G.aiConsent)return false;
- const f=new File([PH.final.blob],'final-photo.jpg',{type:'image/jpeg'});
- for(let t=0;t<2;t++){try{const u=await makeToon(f);const b=await (await fetch(u)).blob();if(!b||!b.size)throw 0;await setPH('cartoon',b);return true}catch(e){}}
- return false}
 async function makeBook(skip){if(GEN.busy||!PH.final)return;GEN.busy=1;GEN.err='';keep();
  const say=t=>{const m=$('#genm');if(m)m.textContent=t};
  try{await fontsReady();await new Promise(r=>setTimeout(r,60));
   const nm=first(),full=G.child;
-  if(!skip&&G.aiConsent&&!PH.cartoon&&STUDIO.aiEndpoint){say('Drawing '+nm+'’s crayon doodle… this can take a minute.');if(!(await ensureCartoon())){GEN.err='cartoon';GEN.busy=0;keep();return}}
   const W=1240,H=1754,pages=[],load=async u=>{try{return await loadX(u)}catch(e){return null}};
   let sd=11;const rnd=()=>(sd=(sd*16807)%2147483647)/2147483647;
   const script=px=>`600 ${px}px 'Dancing Script','Brush Script MT',cursive`;
@@ -413,7 +425,6 @@ async function makeBook(skip){if(GEN.busy||!PH.final)return;GEN.busy=1;GEN.err='
 
   say('Adding '+nm+'’s final photo…');
   {const im=await load(PH.final.url);if(im){const [cv,c]=newPage();head(c,'One Last Smile','Our final Parampara moment');const [w,h]=box(im,840,800);polaroid(c,im,W/2,1010,w,h,-.03,nm+'’s last smile!');foot(c);await push(cv)}}
-  if(PH.cartoon){say('Adding the crayon doodle…');const im=await load(PH.cartoon.url);if(im){const [cv,c]=newPage();head(c,'Doodle Magic','Oil-pastel crayon style, made just for you');const [w,h]=box(im,840,800);polaroid(c,im,W/2,1010,w,h,.03,nm+', the little doodle star!');foot(c);await push(cv)}}
   const gal=[];for(const u of GALLERY){const im=await load(u);if(im)gal.push(im)}
   for(let i=0;i<gal.length;i+=2){say('Adding event moments…');const [cv,c]=newPage();head(c,'Event Moments','Our Parampara celebration');gal.slice(i,i+2).forEach((im,j)=>polaroid(c,im,W/2,700+j*470,j?680:700,j?340:360,j?.025:-.025,''));foot(c);await push(cv)}
 
@@ -441,7 +452,6 @@ async function makeBook(skip){if(GEN.busy||!PH.final)return;GEN.busy=1;GEN.err='
 const driveBtn=()=>`<div class="drv">${EVENT_DRIVE?`<a class="cta" href="${esc(EVENT_DRIVE)}" target="_blank" rel="noopener">Event Photos · Google Drive</a>`:'<span class="cta off" aria-disabled="true">Event Photos · Google Drive</span>'}<p>Photos of the event will be provided within 24 hours.</p></div>`;
 /* ---- events ---- */
 document.addEventListener('change',async e=>{const t=e.target;
- if(t.dataset&&t.dataset.consent!==undefined){if(G){G.aiConsent=t.checked?1:0;saveG()}keep();return}
  if(t.id==='finalfile'){const f=t.files[0];if(!f)return;try{const b=await shrink(f,1600);dropShot();CAM.shot=b;CAM.shotUrl=URL.createObjectURL(b);stopCam();CAM.step='preview'}catch(x){CAM.step='error'}keep();return}
  const k=t.dataset&&t.dataset.ph;if(!k)return;const f=t.files[0];if(!f)return;
  if(!/^image\//.test(f.type)){PHERR[k]='Please choose a photo.';keep();return}
@@ -455,9 +465,9 @@ document.addEventListener('click',async e=>{
   else if(a==='snap')snap();
   else if(a==='retake'){dropShot();CAM.retake=1;CAM.started=1;startCam()}
   else if(a==='cancel'){camLeave();keep()}
-  else if(a==='confirm'&&CAM.shot){const b=CAM.shot;await setPH('final',b);await delPH('cartoon');await delPH('pdf');G.final=1;G.aiConsent=0;saveG();camLeave();GEN.err='';keep()}
+  else if(a==='confirm'&&CAM.shot){const b=CAM.shot;await setPH('final',b);await delPH('pdf');G.final=1;saveG();camLeave();GEN.err='';keep()}
   return}
- const g=e.target.closest('[data-gen]');if(g)makeBook(g.dataset.gen==='skip')});
+ const g=e.target.closest('[data-gen]');if(g)makeBook(true)});
 
 let upd=UPDATES;let lastUp=null;
 let p='';for(let l=0;l<2;l++)for(let i=0;i<12;i++)p+=`<ellipse cx="20" cy="${l?10:6}" rx="${l?4.2:4.6}" ry="${l?6:7}" fill="${l?'#f58a1f':'#f26a21'}" transform="rotate(${i*30+l*15} 20 20)"/>`;
