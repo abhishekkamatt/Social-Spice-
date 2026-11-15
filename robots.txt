@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+Disallow: /parampara/
+
+Sitemap: https://www.socialspice.in/sitemap.xml
