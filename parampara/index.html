@@ -234,7 +234,7 @@ const CFG={
  anonKey:'sb_publishable_rGylH93Z401d684e9WWdlg_Hu69xNNz',
  bucket:'parampara-uploads'
 }; // Publishable key only. Never place a secret/service_role key in browser code.
-const START='2026-11-02T11:00:00+05:30',END='2026-11-02T15:00:00+05:30';
+const START='2026-11-02T11:00:00+05:30',END='2026-11-21T13:30:00+05:30';
 const EVENT_DRIVE=''; // paste the Google Drive link of the event photos here (e.g. 'https://drive.google.com/...'). Button appears automatically once filled.
 const GALLERY=[]; // add organiser-approved photo URLs here; gallery stays hidden while empty
 const STAMPS=['🍬','💐','🌼','🍽️','🖐️','🪔','🏺','🕯️','🏠','🎨'];
@@ -490,7 +490,7 @@ document.body.insertAdjacentHTML('afterbegin',`<svg width="0" height="0" style="
 const mg='<svg><use href="#mg"/></svg>';
 const ring=n=>{const r=36,c=2*Math.PI*r;return `<div class="ring"><svg viewBox="0 0 84 84"><circle cx="42" cy="42" r="${r}" fill="none" stroke="#15302024" stroke-width="8"/><circle cx="42" cy="42" r="${r}" fill="none" stroke="#e8892b" stroke-width="8" stroke-linecap="round" stroke-dasharray="${c}" stroke-dashoffset="${c*(1-n/10)}"/></svg><b>${n}/10</b></div>`};
 const evDate=()=>new Date(START).toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'}).toUpperCase();
-const status=()=>{const n=Date.now();return n<new Date(START)?'Starts today at 11:00 AM':n<=new Date(END)?'Happening today · until 3:00 PM':'Thank you for celebrating with us'};
+const status=()=>{const n=Date.now();return n<new Date(START)?'Starts today at 11:00 AM':n<=new Date(END)?'Open until '+new Date(END).toLocaleString('en-IN',{day:'numeric',month:'short',hour:'numeric',minute:'2-digit',timeZone:'Asia/Kolkata'}):'Thank you for celebrating with us'};
 const bar=(t,back)=>`<div class="sub-top"><a class="back" href="#${back||'home'}" aria-label="Back" style="display:grid;place-items:center;text-decoration:none">‹</a></div><h2 class="pt">${t}</h2>`;
 const tabs=[['home','⌂','Home'],['activities','✦','Activities'],['map','◎','Map'],['bazaar','❖','Bazaar'],['food','☕︎','Food'],['memories','✿','Memories']];
 const V={
