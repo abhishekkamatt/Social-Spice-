@@ -94,6 +94,27 @@ nav.tb a.on{opacity:1;background:#ffffff1c}
 @keyframes up{from{transform:translateY(30px);opacity:0}}
 .sh h3{margin:4px 0 8px;font:600 26px/1.25 var(--disp)}.sh .cat{font:500 11px var(--sans);letter-spacing:.2em;color:var(--o2);text-transform:uppercase}
 @media (prefers-reduced-motion:reduce){.sh>div{animation:none}}
+.sh>div{max-height:92vh;overflow-y:auto}
+.vmw{margin:0 20px;overflow-x:auto;border-radius:18px;box-shadow:0 10px 30px #1d3b2a22;-webkit-overflow-scrolling:touch}
+.vm{position:relative;min-width:620px}.vm img{display:block;width:100%;height:auto}
+.vmh{position:absolute;inset:0}
+.hs{position:absolute;width:8.6%;aspect-ratio:1.35;transform:translate(-50%,-50%);border:0;background:none;padding:0;border-radius:12px;cursor:pointer}
+.hs i{position:absolute;left:50%;top:84%;width:14px;height:14px;margin:-7px 0 0 -7px;border-radius:50%;background:#e8892b;box-shadow:0 0 0 3px #fff;animation:hsp 2.2s ease-out infinite}
+.hs-s i{background:#3f9a4c}.hs-o i{background:#245B9A;top:50%}
+.hs:hover,.hs:focus-visible{background:#ffffff40;outline:3px solid var(--o);outline-offset:2px}
+@keyframes hsp{0%{box-shadow:0 0 0 3px #fff,0 0 0 3px #e8892b88}70%{box-shadow:0 0 0 3px #fff,0 0 0 16px #e8892b00}100%{box-shadow:0 0 0 3px #fff,0 0 0 16px #e8892b00}}
+.vmt{margin:8px 20px 0;font:500 12px var(--sans);color:var(--mut);text-align:center}
+.pst{margin:-8px -4px 16px}.sc{display:block;width:100%;height:auto;border-radius:18px;box-shadow:0 8px 22px #7a5a2e2e}
+.pst-sub{color:var(--mut);margin:-4px 0 8px}.pst-ok{font:600 14px var(--sans);color:#2e7d4a}.pst-a{display:flex;flex-wrap:wrap;gap:10px;margin-top:16px}
+.sh .st li{font-size:16px}
+.sc-aw{animation:aw 3.4s ease-in-out infinite}@keyframes aw{0%,100%{transform:skewX(0)}50%{transform:skewX(-2.2deg)}}
+.sc-ln{animation:ln 2.8s ease-in-out infinite}@keyframes ln{0%,100%{transform:rotate(-7deg)}50%{transform:rotate(7deg)}}
+.sc-it{animation:it 2.4s ease-in-out infinite}@keyframes it{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+.sc-fm{transform-box:fill-box;transform-origin:50% 100%;animation:fm .9s ease-in-out infinite alternate}@keyframes fm{from{transform:scale(1,1)}to{transform:scale(.82,1.18);fill:#ffd36b}}
+.sc-gw{animation:gw 1.6s ease-in-out infinite alternate}@keyframes gw{to{opacity:.55}}
+.sc-sp{transform-box:fill-box;transform-origin:center;animation:sp 2s ease-in-out infinite}@keyframes sp{0%,100%{opacity:.2;transform:scale(.6)}50%{opacity:1;transform:scale(1.2)}}
+.sc-fl{transform-box:fill-box;transform-origin:50% 0;animation:fl 2.6s ease-in-out infinite}@keyframes fl{0%,100%{transform:rotate(-6deg)}50%{transform:rotate(6deg)}}
+@media (prefers-reduced-motion:reduce){.hs i,.sc-aw,.sc-ln,.sc-it,.sc-fm,.sc-gw,.sc-sp,.sc-fl{animation:none}}
 .hero{position:relative;overflow:hidden;background:radial-gradient(120% 70% at 50% 38%,#1b4429,#153422 60%,#102a1b);padding-top:6px}
 .hero .top{position:relative;z-index:5;justify-content:flex-end}.hero .lg{display:none}.hero .bell{background:#0c1f14aa}
 .hero .gl{position:absolute;right:0;top:0;width:clamp(76px,17%,128px);pointer-events:none}
@@ -258,7 +279,30 @@ const STALLS=[['The Art Date','Handcrafted lotus flowers, diyas and festive gift
 ['WickandWish','Delightful mithai and handcrafted, theme-based diyas.',['Mithai','Themed diyas']],
 ['Ras – The Cold-Pressed Juicery','Juices with no added sugar, water or ice, served at room temperature.',['Chargeable','Cold-pressed juices'],1]];
 const FREE=['Tea','Coffee','Cookies','Drinking water'];
-const OTHER=[['Refreshment area','Tea, coffee, cookies and drinking water for parents.','food'],['Welcome / Help desk','Ask the team for help.',''],['Seating area','Take a break with your family.',''],['Washroom','',''] ];
+const OTHER=[['Refreshment area','Tea, coffee, cookies and drinking water for parents.','food'],['Welcome / Help desk','Ask the team for help.',''],['Seating area','Sit around the rangoli under the big tree and take a break with your family.',''],['Toilets','Separate toilets for men and women, at the far corner of the venue.',''],['Entry','Walk in here. The bazaar stalls are on your right and the activity corners are straight ahead.','']];
+/* Venue map hotspots: [data-m id, left %, top %] measured on venue-map.webp (1536×1024) */
+const HOT=[['c0',88.5,23.5],['c1',86.8,31.4],['c2',85,39],['c3',83.3,46.7],['c4',81.4,54.4],['c5',35.2,30.8],['c6',43,28],['c7',50.1,25.1],['c8',57.4,22.3],['c9',65.2,19.3],
+['s0',33.3,66.9],['s1',41.7,66.9],['s2',49.8,66.9],['s3',57.9,66.9],['s4',66.4,66.9],['o0',80.6,67.4],['o3',80.5,12.5],['o4',15.4,54.2],['o2',52,56.5]];
+/* Poster art: what sits on each counter */
+const ART={c:[['🍬','🍮','🥛'],['🌼','💐','🌸'],['🌺','🎨','🌼'],['🖍️','🍽️','⭐'],['🖐️','🌿','🌸'],['🪔','🌺','🔔'],['🏺','🪔','✋'],['🕯️','🎨','✨'],['🏠','🪔','🧸'],['🎨','😊','🦋']],
+ s:[['🪷','🪔','🎁'],['🏷️','💌','✉️'],['🧸','✏️','🎁'],['🍬','🪔','✨'],['🧃','🍊','🍍']],
+ o:[['☕','🍪','💧'],['🙋','ℹ️','🤝'],['🪑','🌳','🪔'],['🚻','🧼','💧'],['🚪','🪔','🙏']]};
+const CODE=t=>t[0]==='c'?'A'+(+t.slice(1)+1):t[0]==='s'?'S'+(+t.slice(1)+1):({o0:'☕',o1:'ℹ',o2:'🪑',o3:'WC',o4:'IN'})[t]||'';
+const hsLabel=t=>{const i=+t.slice(1);return t[0]==='c'?`A${i+1} · ${ACT[i][0]}`:t[0]==='s'?`S${i+1} · ${STALLS[i][0]}`:OTHER[i][0]};
+/* Animated illustrated stall poster (SVG). Red awning = activity corner, green = bazaar stall. */
+function scene(t){const k=t[0],i=+t.slice(1),em=ART[k][i],col=k==='c'?['#e2483d','#fff6ec']:k==='s'?['#3f9a4c','#f4fbef']:['#2f6b55','#fdf6e8'];
+ const stripes=Array.from({length:8},(x,j)=>`<rect x="${50+j*27.5}" y="58" width="27.5" height="38" fill="${col[j%2]}"/>`).join('')+Array.from({length:8},(x,j)=>`<circle cx="${63.75+j*27.5}" cy="96" r="13.75" fill="${col[j%2]}"/>`).join('');
+ const flags=Array.from({length:11},(x,j)=>`<path d="M${8+j*29} 14l14 0-7 13z" fill="${['#e8892b','#e2483d','#c9a24a','#3f9a4c'][j%4]}" class="sc-fl" style="animation-delay:${(j%5)*.2}s"/>`).join('');
+ return `<svg class="sc" viewBox="0 0 320 220" role="img" aria-label="Illustration of ${esc(hsLabel(t))}"><defs><linearGradient id="sg${t}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff3df"/><stop offset="1" stop-color="#ffd9b0"/></linearGradient><radialGradient id="gl${t}"><stop offset="0" stop-color="#ffd36b" stop-opacity=".9"/><stop offset="1" stop-color="#ffd36b" stop-opacity="0"/></radialGradient></defs>
+ <rect width="320" height="220" rx="18" fill="url(#sg${t})"/><path d="M0 14q160 18 320 0" stroke="#7a5a2e" stroke-width="1.2" fill="none"/>${flags}
+ <g class="sc-ln" style="transform-origin:28px 30px"><line x1="28" y1="30" x2="28" y2="46" stroke="#7a5a2e"/><circle cx="28" cy="56" r="20" fill="url(#gl${t})"/><rect x="20" y="46" width="16" height="20" rx="7" fill="#e8892b"/><rect x="23" y="49" width="10" height="14" rx="4" fill="#ffd36b" class="sc-gw"/></g>
+ <g class="sc-ln" style="transform-origin:292px 30px;animation-delay:.6s"><line x1="292" y1="30" x2="292" y2="46" stroke="#7a5a2e"/><circle cx="292" cy="56" r="20" fill="url(#gl${t})"/><rect x="284" y="46" width="16" height="20" rx="7" fill="#e2483d"/><rect x="287" y="49" width="10" height="14" rx="4" fill="#ffd36b" class="sc-gw"/></g>
+ <rect x="56" y="80" width="7" height="104" fill="#9a6532"/><rect x="257" y="80" width="7" height="104" fill="#9a6532"/>
+ <g class="sc-aw" style="transform-origin:160px 58px">${stripes}<rect x="118" y="34" width="84" height="28" rx="7" fill="#fffdf7" stroke="${col[0]}" stroke-width="2.5"/><text x="160" y="54" text-anchor="middle" font-family="Poppins,sans-serif" font-weight="700" font-size="17" fill="#1d3b2a">${CODE(t)}</text></g>
+ <rect x="44" y="150" width="232" height="16" rx="4" fill="#e8b46e"/><rect x="50" y="166" width="220" height="38" rx="4" fill="#c9803a"/><path d="M60 175h200M60 186h200M60 197h200" stroke="#b06d2c" stroke-width="1"/>
+ ${em.map((e,j)=>`<text x="${104+j*56}" y="146" text-anchor="middle" font-size="38" class="sc-it" style="animation-delay:${j*.35}s">${e}</text>`).join('')}
+ <g><ellipse cx="66" cy="150" rx="10" ry="4" fill="#a85a23"/><path d="M66 134q-6 9 0 14q6-5 0-14z" fill="#ffb02e" class="sc-fm"/></g><g><ellipse cx="254" cy="150" rx="10" ry="4" fill="#a85a23"/><path d="M254 134q-6 9 0 14q6-5 0-14z" fill="#ffb02e" class="sc-fm" style="animation-delay:.3s"/></g>
+ <text x="30" y="122" font-size="13" fill="#e8892b" class="sc-sp">✦</text><text x="284" y="118" font-size="11" fill="#c9a24a" class="sc-sp" style="animation-delay:.7s">✦</text><text x="160" y="214" font-size="10" fill="#e2483d" class="sc-sp" style="animation-delay:1.2s">✦</text><text x="14" y="190" font-size="9" fill="#c9a24a" class="sc-sp" style="animation-delay:1.6s">✦</text><text x="304" y="186" font-size="12" fill="#e8892b" class="sc-sp" style="animation-delay:.4s">✦</text></svg>`}
 /* ================================================================================ */
 const $=s=>document.querySelector(s),pad=n=>String(n).padStart(2,'0');
 
@@ -512,10 +556,9 @@ corner(i){const a=ACT[i],id='corner-'+pad(i+1),d=done.has(id),pv=(i+9)%10,nx=(i+
  <h4>What to do</h4><ol class="st">${a[3].map(s=>`<li><span>${s}</span></li>`).join('')}</ol>${phBlock(id)}
  <a class="cta ghost" href="#activities" style="width:100%;justify-content:center;margin-top:12px">Back to checklist</a>
  <div class="pf"><a class="lnk" href="#corner-${pad(pv+1)}">‹ ${ACT[pv][0]}</a><a class="lnk" href="#corner-${pad(nx+1)}" style="text-align:right">${ACT[nx][0]} ›</a></div><p><a class="lnk" href="#home">⌂ Back to event homepage</a></p></div>`},
-map(){return bar('Venue Map')+`<p class="lead">Tap any place to see what it is.</p><div class="sec" style="margin-top:0">Activity corners</div><div class="mp">${ACT.map((a,i)=>`<button data-m="c${i}">${pad(i+1)}</button>`).join('')}</div>
- <div class="sec">Bazaar stalls</div><div class="mp">${STALLS.map((s,i)=>`<button data-m="s${i}">Stall ${pad(i+1)}</button>`).join('')}</div>
- <div class="sec">Facilities</div><div class="mp">${OTHER.map((o,i)=>`<button class="cr" data-m="o${i}">${o[0]}</button>`).join('')}</div>
- <p class="note">The illustrated map and exact locations will appear here once the organisers share the venue layout.</p>`},
+map(){return bar('Venue Map')+`<p class="lead">Tap any stall or activity corner on the map to open it.</p><div class="vmw"><div class="vm"><img src="venue-map.webp" width="1536" height="1024" alt="Parampara venue map: activity corners A1 to A10, bazaar stalls S1 to S5, refreshment area, toilets and entry" decoding="async"><div class="vmh">${HOT.map(h=>`<button class="hs hs-${h[0][0]}" data-m="${h[0]}" style="left:${h[1]}%;top:${h[2]}%" aria-label="${esc(hsLabel(h[0]))}"><i></i></button>`).join('')}</div></div></div><p class="vmt">Swipe sideways to see the whole map · pinch to zoom</p><div class="sec">Activity corners</div><div class="mp">${ACT.map((a,i)=>`<button data-m="c${i}">A${i+1}</button>`).join('')}</div>
+ <div class="sec">Bazaar stalls</div><div class="mp">${STALLS.map((s,i)=>`<button data-m="s${i}">S${i+1}</button>`).join('')}</div>
+ <div class="sec">Facilities</div><div class="mp">${OTHER.map((o,i)=>`<button class="cr" data-m="o${i}">${o[0]}</button>`).join('')}</div>`},
 bazaar(){return bar('Festive Bazaar')+`<p class="lead">Five little stalls to explore.</p>`+STALLS.map((s,i)=>`<article class="card stall"><small>STALL ${pad(i+1)}${s[3]?' · CHARGEABLE':''}</small><h3>${s[0]}</h3><p>${s[1]}</p><div class="tg">${s[2].map(t=>`<u class="${t==='Chargeable'?'p':''}">${t}</u>`).join('')}</div><a class="lnk" href="#stall-${pad(i+1)}">Stall page ›</a></article>`).join('')},
 food(){return bar('Food & Refreshments')+`<p class="lead">Know what is free and what is chargeable.</p><div class="sec" style="margin-top:0">Complimentary</div><div class="pg"><div class="card">${FREE.map(f=>`<div class="fr"><span>${f}</span><span class="badge">FREE</span></div>`).join('')}<p style="margin:14px 0 0;color:var(--mut)">Served by the school for our parents.</p></div></div>
  <div class="sec">Chargeable</div><div class="pg"><div class="card"><div class="fr" style="border:0"><span>Cold-pressed juices by Ras<br><small style="color:var(--mut)">Stall 05 · no added sugar, water or ice</small></span><span class="badge p">CHARGEABLE</span></div></div></div>`},
@@ -546,9 +589,14 @@ document.addEventListener('click',e=>{
  if(e.target.id==='ed'){openGate();return}
  const d=e.target.closest('[data-done]');if(d){const id=d.dataset.done;if(done.has(id)){done.delete(id);save();const y=scrollY;render();scrollTo(0,y)}else{done.add(id);save();go('activities')}return}
  const m=e.target.closest('[data-m]');if(m){const t=m.dataset.m,i=+t.slice(1);let c,n,b,l='';
-  if(t[0]==='c'){c='Activity corner';n='Corner '+pad(i+1);b=ACT[i][1];l='corner-'+pad(i+1)}else if(t[0]==='s'){c='Bazaar stall';n=STALLS[i][0];b=STALLS[i][1];l='bazaar'}else{c='Facility';n=OTHER[i][0];b=OTHER[i][1];l=OTHER[i][2]}
-  $('#shb').innerHTML=`<div class="cat">${c}</div><h3>${n}</h3><p>${b}</p><p style="color:var(--mut);font-size:17px">Exact location to be confirmed by the organisers.</p>${l?`<a class="cta" href="#${l}" id="vd">View details</a> `:''}<button class="cta ghost" id="cl">Close</button>`;$('#sh').classList.add('on');return}
- if(e.target.id==='cl'||e.target.id==='vd'||e.target.id==='sh')$('#sh').classList.remove('on')});
+  let extra='',btn='';
+  if(t[0]==='c'){const a=ACT[i],id='corner-'+pad(i+1),ok=done.has(id);c=`Activity corner · A${i+1}`;n=a[0];b=`<p class="pst-sub">${a[1]}</p><p>${a[2]}</p>`;
+   extra=`<h4>What to do</h4><ol class="st">${a[3].map(x=>`<li><span>${x}</span></li>`).join('')}</ol>`;
+   btn=ok?`<p class="pst-ok">✓ Done · stamped on your postcard</p><a class="cta ghost" href="#activities" id="vd" data-row="${id}">See my postcard</a> `:`<a class="cta" href="#activities" id="vd" data-row="${id}">✓ Done · Click photo 📸</a> `}
+  else if(t[0]==='s'){const x=STALLS[i];c=`Bazaar stall · S${i+1}${x[3]?' · chargeable':''}`;n=x[0];b=`<p>${x[1]}</p><div class="tg">${x[2].map(g=>`<u class="${g==='Chargeable'?'p':''}">${g}</u>`).join('')}</div>`;btn=`<a class="cta" href="#stall-${pad(i+1)}" id="vd">Stall page</a> `}
+  else{const o=OTHER[i];c='Facility';n=o[0];b=o[1]?`<p>${o[1]}</p>`:'';if(i===0)extra=`<div class="tg">${FREE.map(f=>`<u>${f}</u>`).join('')}</div>`;l=o[2];btn=l?`<a class="cta" href="#${l}" id="vd">View details</a> `:''}
+  $('#shb').innerHTML=`<div class="pst">${scene(t)}</div><div class="cat">${c}</div><h3>${n}</h3>${b}${extra}<div class="pst-a">${btn}<button class="cta ghost" id="cl">Close</button></div>`;$('#sh').classList.add('on');$('#shb').scrollTop=0;return}
+ if(e.target.id==='cl'||e.target.id==='vd'||e.target.id==='sh'){$('#sh').classList.remove('on');const r=e.target.dataset&&e.target.dataset.row;if(r)setTimeout(()=>{const el=document.getElementById('row-'+r);if(el)el.scrollIntoView({behavior:'smooth',block:'center'})},350)}});
 addEventListener('keydown',e=>{if(e.key==='Escape')$('#sh').classList.remove('on')});
 // live announcements (only when Supabase is configured on your own domain)
 const loadUpd=()=>{if(!CFG.supabaseUrl)return;fetch(CFG.supabaseUrl+'/rest/v1/announcements?published=eq.true&order=pinned.desc,created_at.desc',{headers:{apikey:CFG.anonKey,Authorization:'Bearer '+CFG.anonKey}}).then(r=>r.json()).then(r=>{if(Array.isArray(r)){upd=r.map(x=>({t:new Date(x.created_at).toLocaleTimeString('en-IN',{hour:'numeric',minute:'2-digit'}),important:x.important,status:x.status,title:x.title,body:x.body}));lastUp=new Date();if(location.hash.slice(1)==='updates'||ROUTE==='home'||ROUTE==='updates')render()}}).catch(()=>{})};loadUpd();setInterval(loadUpd,60000);if(!G)openGate();loadPhotos();
